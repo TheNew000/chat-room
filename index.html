@@ -12,6 +12,13 @@
 			float: left;
 			min-height: 90vh;
 		}
+		#chat-stuff{
+			width: 15%;
+		}
+		#canvas{
+			border: 2px solid black;
+			float: left;
+		}
 	</style>
 
 	<script type="text/javascript" src="/socket.io/socket.io.js"></script>
@@ -21,7 +28,7 @@
 
 		// var name = "Anonymous";
 		// console.log(window);
-		console.log(window.io);
+		// console.log(window.io);
 		var socketio = io.connect('http://127.0.0.1:8080');
 		socketio.emit('name_to_server', name);
 
@@ -55,6 +62,7 @@
 			name = document.getElementById('nameInput').value;
 			socketio.emit('name_to_server',name);
 		}
+
 	</script>
 
 </head>
@@ -69,6 +77,7 @@
 
 		<input type="text" id="message" placeholder="Your message here">
 		<button onclick="sendMessage()">Click here to send message!</button>
+	<canvas id="canvas" width="500px" height="500px"></canvas>
 	<div id="chat-window">
 		<div id="chats"></div>
 		<div id="chat-stuff">
@@ -79,11 +88,79 @@
 			</ul>
 		</div>
 	</div>
+	<div id="tool-bar">
+		<input type="color" id="color-picker">
+		<label>Choose your Thickness</label>
+		<input type="number" id="thickness-picker" placeholder="10">
+	</div>
 <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.6/angular.min.js"></script>
 <script>
 	var myApp = angular.module('myApp', []);
 	myApp.controller('myController',function($scope){
 		$scope.message = "test";
+	});
+
+// Canvass Section Start
+	var canvas = document.getElementById('canvas');
+	var context = canvas.getContext('2d');
+	var mouseDown = false;
+	var color = '#000';
+	var thickness = 10;
+	var colorChoice = document.getElementById('color-picker');
+	var mousePosition;
+	var lastMousePosition = null;
+
+
+	colorChoice.addEventListener('change', function(event){
+		color = colorChoice.value;
+	});
+
+	var thicknessPicker = document.getElementById('thickness-picker');
+	thicknessPicker.addEventListener('change', function(event){
+		thickness = thicknessPicker.value;
+	});
+
+	canvas.addEventListener('mousedown', function(e){
+		mouseDown = true;
+	});
+	canvas.addEventListener('mouseup', function(e){
+		mouseDown = false;
+		lastMousePosition = null;
+	});
+
+	canvas.addEventListener('mousemove', function(e){
+		if(mouseDown){
+			var magicBrushX = e.pageX - canvas.offsetLeft;
+			var magicBrushY = e.pageY - canvas.offsetTop;
+
+			mousePosition = {
+				x: magicBrushX,
+				y: magicBrushY
+			}
+
+			if (lastMousePosition !== null) {
+				context.strokeStyle = color;
+				context.lineJoin = 'round';
+				context.lineWidth = thickness;
+				context.beginPath();
+				context.moveTo(lastMousePosition.x, lastMousePosition.y);
+				context.lineTo(mousePosition.x, mousePosition.y);
+				context.closePath();
+				context.stroke();
+			}
+
+			var drawingData = {
+				mousePosition: mousePosition,
+				lastMousePosition: lastMousePosition,
+				color: color,
+				thickness: thickness
+			}
+
+			lastMousePosition = {
+				x: mousePosition.x,
+				y: mousePosition.y
+			};
+		}
 	});
 </script>
 </body>
