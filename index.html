@@ -77,6 +77,16 @@
 
 		<input type="text" id="message" placeholder="Your message here">
 		<button onclick="sendMessage()">Click here to send message!</button>
+	<form>
+		<div>
+			
+			<button id="draw" onClick="pickTool('draw')" value="draw" checked>DRAW</button>
+		</div>
+		
+		<div>
+			<button id="erase" onClick="pickTool('erase')" value="erase">ERASE</button>
+		</div>
+	</form>
 	<canvas id="canvas" width="500px" height="500px"></canvas>
 	<div id="chat-window">
 		<div id="chats"></div>
@@ -104,16 +114,26 @@
 	var canvas = document.getElementById('canvas');
 	var context = canvas.getContext('2d');
 	var mouseDown = false;
-	var color = '#000';
 	var thickness = 10;
 	var colorChoice = document.getElementById('color-picker');
+	// var tool = document.getElementsByClassName('tools');
 	var mousePosition;
 	var lastMousePosition = null;
+	var color;
 
+	function pickTool(tool) {
+        if (tool == 'draw'){
+        	colorChoice.addEventListener('change', function(event){
+				color = colorChoice.value;
+			});
+        }else if (tool == 'erase'){
+        	color = '#fff';
+        }else{
+        	color = '#000';
+        }
+    };
 
-	colorChoice.addEventListener('change', function(event){
-		color = colorChoice.value;
-	});
+    pickTool();
 
 	var thicknessPicker = document.getElementById('thickness-picker');
 	thicknessPicker.addEventListener('change', function(event){
@@ -155,12 +175,24 @@
 				color: color,
 				thickness: thickness
 			}
+			socketio.emit('drawing_to_server', drawingData);
 
 			lastMousePosition = {
 				x: mousePosition.x,
 				y: mousePosition.y
 			};
 		}
+	});
+
+	socketio.on('drawing_to_client', function(drawingData){
+		context.strokeStyle = drawingData.color;
+		context.lineJoin = 'round';
+		context.lineWidth = drawingData.thickness;
+		context.beginPath();
+		context.moveTo(drawingData.lastMousePosition.x, drawingData.lastMousePosition.y);
+		context.lineTo(drawingData.mousePosition.x, drawingData.mousePosition.y);
+		context.closePath();
+		context.stroke();
 	});
 </script>
 </body>
