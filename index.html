@@ -77,16 +77,15 @@
 
 		<input type="text" id="message" placeholder="Your message here">
 		<button onclick="sendMessage()">Click here to send message!</button>
-	<form>
-		<div>
-			
-			<button id="draw" onClick="pickTool('draw')" value="draw" checked>DRAW</button>
-		</div>
-		
-		<div>
-			<button id="erase" onClick="pickTool('erase')" value="erase">ERASE</button>
-		</div>
-	</form>
+	<div id="tool-bar">
+		<label>Choose your Color</label>
+		<input type="color" id="color-picker">
+		<label>Choose your Thickness</label>
+		<input type="number" id="thickness-picker" placeholder="10">
+		<button id="draw" onClick="pickTool('draw')" value="draw">DRAW</button>
+		<button id="erase" onClick="pickTool('erase')" value="erase">ERASE</button>
+		<button id="clear" onClick="clearBoard()" value="clear">CLEAR BOARD</button>
+	</div>
 	<canvas id="canvas" width="500px" height="500px"></canvas>
 	<div id="chat-window">
 		<div id="chats"></div>
@@ -98,11 +97,7 @@
 			</ul>
 		</div>
 	</div>
-	<div id="tool-bar">
-		<input type="color" id="color-picker">
-		<label>Choose your Thickness</label>
-		<input type="number" id="thickness-picker" placeholder="10">
-	</div>
+	
 <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.6/angular.min.js"></script>
 <script>
 	var myApp = angular.module('myApp', []);
@@ -121,19 +116,22 @@
 	var lastMousePosition = null;
 	var color;
 
+	function clearBoard(){
+		console.log(canvas.width, canvas.height);
+		context.clearRect(0, 0, canvas.width, canvas.height);
+	}
+
 	function pickTool(tool) {
         if (tool == 'draw'){
-        	colorChoice.addEventListener('change', function(event){
 				color = colorChoice.value;
-			});
         }else if (tool == 'erase'){
         	color = '#fff';
-        }else{
-        	color = '#000';
         }
     };
 
-    pickTool();
+    colorChoice.addEventListener('change', function(event){
+		color = colorChoice.value;
+	});
 
 	var thicknessPicker = document.getElementById('thickness-picker');
 	thicknessPicker.addEventListener('change', function(event){
